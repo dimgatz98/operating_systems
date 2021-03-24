@@ -10,26 +10,48 @@
 #include <sys/wait.h>
 #include <string.h>
 
+#define YELLOW "\033[33m"
+#define RED "\033[31;1m"
+#define GREEN "\033[32m"
+#define WHITE "\033[37m"
+#define MAGENTA "\033[34m"
+#define CYAN "\033[36m"
+#define GRAY "\033[38;1m"
+#define DEFAULT "\033[30;1m"
+
 pid_t *pid, killed_child;
 int length;
 
-void terminate_children(int signum){
+void terminate_children_before_parent(){
 	for(int i = 0 ; i < length ; i++){
-		printf("[PARENT/PID=%d] Waiting for %d children to exit", getpid(), length - i);
+		printf(CYAN"[PARENT/PID=%d] Waiting for %d children to exit\n", getpid(), length - i);
 		if(kill(pid[i], SIGTERM) < 0){
-			perror("Counldn't send signal");
+			perror(DEFAULT"Counldn't send signal\n");
 			exit(-1);
 		}
-		printf("[PARENT/PID=%d] Child with PID=%d terminated successfully with exit status code 0!\n", getpid(), pid[i]);
+		printf(YELLOW"[PARENT/PID=%d] Child with PID=%d terminated successfully with exit status code 0!\n", getpid(), pid[i]);
 	}
-	printf("[PARENT/PID=%d] All children exited, terminating as well", getpid());
+	printf(YELLOW"[PARENT/PID=%d] All children exited, terminating as well\n", getpid());
+}
+
+void terminate_children(int signum){
+	for(int i = 0 ; i < length ; i++){
+		printf(CYAN"[PARENT/PID=%d] Waiting for %d children to exit\n", getpid(), length - i);
+		if(kill(pid[i], SIGTERM) < 0){
+			perror(DEFAULT"Counldn't send signal\n");
+			exit(-1);
+		}
+		printf(YELLOW"[PARENT/PID=%d] Child with PID=%d terminated successfully with exit status code 0!\n", getpid(), pid[i]);
+	}
+	printf(YELLOW"[PARENT/PID=%d] All children exited, terminating as well\n", getpid());
 	exit(0);
 }
 
 void make_children_print(int signum){
 	for(int i = 0 ; i < length ; i++){
 		if(kill(pid[i], SIGUSR1) < 0){
-			perror("Counldn't send signal");
+			perror(DEFAULT"Counldn't send signal\n");
+			terminate_children_before_parent();
 			exit(-1);
 		}
 	}
@@ -37,7 +59,8 @@ void make_children_print(int signum){
 
 int main(int argc, char **argv){
 	if(argc != 2){
-		perror("Too many arguments in father process!");
+		perror(DEFAULT"Too many arguments in father process!\n");
+		terminate_children_before_parent();
 		return -1;
 	}
 	int code;
@@ -57,17 +80,19 @@ int main(int argc, char **argv){
 		char *const parmList[] = {"child", flag, NULL, NULL};
 		pid[i] = fork();
 		if(pid[i] < 0){
-			perror("child not created");
+			perror(DEFAULT"child not created\n");
+			terminate_children_before_parent();
 			return -1;
 		}
 		else if(pid[i] == 0){
 			if(execve("child", parmList, NULL) < 0){
-				perror("Counldn't send signal");
+				perror(DEFAULT"Counldn't send signal\n");
+				terminate_children_before_parent();
 				exit(-1);
 			}
 		}
 		else{
-			printf("[PARENT/PID=%d] Created child %d (PID=%d) and initial state '%c'\n", getpid(), i, pid[i], flag[0]);
+			printf(MAGENTA"[PARENT/PID=%d] Created child %d (PID=%d) and initial state '%c'\n", getpid(), i, pid[i], flag[0]);
 		}
 	}
 
@@ -75,7 +100,7 @@ int main(int argc, char **argv){
 	sigaction(SIGUSR1, &make_children_print_action, NULL);
 	
 	while(1){
-		killed_child = waitpid(-1, &code, 0);
+		killed_child = waitpid(-1, &code, WUNTRACED);
 
 		if(WIFEXITED(code)){
 			int child_no;
@@ -91,21 +116,23 @@ int main(int argc, char **argv){
 			char *const parmList[] = {"child", flag, NULL, NULL};
 			pid[child_no] = fork();
 			if(pid[child_no] < 0){
-				perror("child not created");
+				perror(DEFAULT"child not created\n");
+				terminate_children_before_parent();
 				exit(-1);
 			}
 			else if(pid[child_no] == 0){
 				if(execve("child", parmList, NULL) < 0){
-					perror("Counldn't send signal");
+					perror(DEFAULT"Counldn't send signal\n");
+					terminate_children_before_parent();
 					exit(-1);
 				}
 			}
-			else if(WIFSTOPPED(code)){
-				printf("[PARENT/PID=%d] Created child %d (PID=%d) and initial state '%c'\n", getpid(), child_no, pid[child_no], flag[0]);
+			else{
+				printf(MAGENTA"[PARENT/PID=%d] Created child %d (PID=%d) and initial state '%c'\n", getpid(), child_no, pid[child_no], flag[0]);
 			}
 		}
 
-		else
+		else if(WIFSTOPPED(code))
 			kill(killed_child, SIGCONT);
 	}
 }

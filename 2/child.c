@@ -10,36 +10,45 @@
 #include <sys/wait.h>
 #include <string.h>
 
+#define YELLOW "\033[33m"
+#define RED "\033[31;1m"
+#define GREEN "\033[32m"
+#define WHITE "\033[37m"
+#define MAGENTA "\033[34m"
+#define CYAN "\033[36m"
+#define GRAY "\033[38;1m"
+#define DEFAULT "\033[30;1m"
+
 time_t start;
 int id;
 char gate_state;
 
 void print_and_alarm(int signum){
 	if(gate_state == 't')
-		printf("[ID=%d/PID=%d/TIME=%lds] The gates are open!\n", id, getpid(), time(NULL) - start);
+		printf(GREEN"[ID=%d/PID=%d/TIME=%lds] The gates are open!\n", id, getpid(), time(NULL) - start);
 	
 	else
-    	printf("[ID=%d/PID=%d/TIME=%lds] The gates are closed!\n", id, getpid(), time(NULL) - start);
-    alarm(15);
+    	printf(RED"[ID=%d/PID=%d/TIME=%lds] The gates are closed!\n", id, getpid(), time(NULL) - start);
+    alarm(5);
 }
 
 void print_state(int signum){
 	if(gate_state == 't')
-		printf("[ID=%d/PID=%d/TIME=%lds] The gates are open!\n", id, getpid(), time(NULL) - start);
+		printf(GREEN"[ID=%d/PID=%d/TIME=%lds] The gates are open!\n", id, getpid(), time(NULL) - start);
 	
 	else
-    	printf("[ID=%d/PID=%d/TIME=%lds] The gates are closed!\n", id, getpid(), time(NULL) - start);	
+    	printf(RED"[ID=%d/PID=%d/TIME=%lds] The gates are closed!\n", id, getpid(), time(NULL) - start);	
 }
 
 void flip_state(int signum){
 	if(gate_state == 'f'){
 		gate_state = 't';
-		printf("[ID=%d/PID=%d/TIME=%lds] The gates are open!\n", id, getpid(), time(NULL) - start);
+		printf(GREEN"[ID=%d/PID=%d/TIME=%lds] The gates are open!\n", id, getpid(), time(NULL) - start);
 	}
 
 	else{
 		gate_state = 'f';
-    	printf("[ID=%d/PID=%d/TIME=%lds] The gates are closed!\n", id, getpid(), time(NULL) - start);
+    	printf(RED"[ID=%d/PID=%d/TIME=%lds] The gates are closed!\n", id, getpid(), time(NULL) - start);
     }
 }
 
@@ -49,7 +58,7 @@ void terminating(int signum){
 
 int main(int argc, char **argv){
 	if(argc != 2){
-		perror("Too many arguments in child process!");
+		perror(DEFAULT"Too many arguments in child process!");
 		return -1;
 	}
 	struct sigaction print_and_alarm_action, print_state_action, flip_state_action, terminating_action;
@@ -72,17 +81,17 @@ int main(int argc, char **argv){
 	start = time(NULL);
     
     if(argv[1][0] == 't')
-		printf("[ID=%d/PID=%d/TIME=%ds] The gates are open!\n", argv[1][1], getpid(), 0);
+		printf(GREEN"[ID=%d/PID=%d/TIME=%ds] The gates are open!\n", argv[1][1], getpid(), 0);
 	
     else
-    	printf("[ID=%d/PID=%d/TIME=%ds] The gates are closed!\n", argv[1][1], getpid(), 0);
+    	printf(RED"[ID=%d/PID=%d/TIME=%ds] The gates are closed!\n", argv[1][1], getpid(), 0);
 
     sigaction(SIGALRM, &print_and_alarm_action, NULL);
     sigaction(SIGUSR1, &print_state_action, NULL);
     sigaction(SIGUSR2, &flip_state_action, NULL);
 	sigaction(SIGTERM, &terminating_action, NULL);
 	
-	alarm(15);
+	alarm(5);
 
     while(1){
     	pause();

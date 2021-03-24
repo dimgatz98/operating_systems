@@ -75,7 +75,7 @@ int main(int argc, char **argv){
 	sigaction(SIGUSR1, &make_children_print_action, NULL);
 	
 	while(1){
-		killed_child = waitpid(-1, &code, WSTOPPED | WEXITED);
+		killed_child = waitpid(-1, &code, 0);
 
 		if(WIFEXITED(code)){
 			int child_no;
@@ -100,7 +100,7 @@ int main(int argc, char **argv){
 					exit(-1);
 				}
 			}
-			else{
+			else if(WIFSTOPPED(code)){
 				printf("[PARENT/PID=%d] Created child %d (PID=%d) and initial state '%c'\n", getpid(), child_no, pid[child_no], flag[0]);
 			}
 		}

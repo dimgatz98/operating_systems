@@ -20,7 +20,7 @@ void print_and_alarm(int signum){
 	
 	else
     	printf("[ID=%d/PID=%d/TIME=%lds] The gates are closed!\n", id, getpid(), time(NULL) - start);
-    alarm(5);
+    alarm(15);
 }
 
 void print_state(int signum){
@@ -82,10 +82,10 @@ int main(int argc, char **argv){
     sigaction(SIGUSR2, &flip_state_action, NULL);
 	sigaction(SIGTERM, &terminating_action, NULL);
 	
-	alarm(5);
+	alarm(15);
 
     while(1){
-    	//pause();
+    	pause();
     }
 
     return 0;

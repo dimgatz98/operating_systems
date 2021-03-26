@@ -5,3 +5,5 @@ father: father.c
 all: child.c father.c
 	gcc child.c -o child
 	gcc father.c -o father
+clean:
+	rm child father

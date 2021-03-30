@@ -59,10 +59,19 @@ void make_children_print(int signum){
 
 int main(int argc, char **argv){
 	if(argc != 2){
-		perror(DEFAULT"Too many arguments in father process!\n");
+		perror(DEFAULT"Too many arguments in father process\n");
 		terminate_children_before_parent();
 		return -1;
 	}
+
+	for(int i = 0 ; i  < strlen(argv[1]) ; i++){
+		if(!(argv[1][i] == 'f' || argv[1][i] == 't') ){
+			perror(DEFAULT"Arguments should only be 't' or 'f'\n");
+			terminate_children_before_parent();
+			return -1;		
+		}
+	}
+
 	int code;
 	struct sigaction terminate_children_action, make_children_print_action, remake_child_action;
 	

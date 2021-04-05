@@ -77,6 +77,9 @@ int main(int argc, char **argv){
 	make_children_print_action.sa_handler = make_children_print;
 	make_children_print_action.sa_flags = SA_RESTART;
 	
+	sigaction(SIGTERM, &terminate_children_action, NULL);
+	sigaction(SIGUSR1, &make_children_print_action, NULL);
+
 	length = strlen(argv[1]);
 	pid = (pid_t *) malloc(sizeof(pid[0]) * length);
 	
@@ -85,14 +88,14 @@ int main(int argc, char **argv){
 		char *const parmList[] = {"child", flag, NULL, NULL};
 		pid[i] = fork();
 		if(pid[i] < 0){
-			perror(DEFAULT"child not created\n");
+			perror(DEFAULT"Child not created\n");
 			terminate_children_before_parent();
-			return -1;
+			exit(-1);
 		}
 		else if(pid[i] == 0){
 			if(execve("child", parmList, NULL) < 0){
-				perror(DEFAULT"Counldn't send signal\n");
-				terminate_children_before_parent();
+				perror(DEFAULT"Couldn't create child\n");
+				kill(getppid(), SIGTERM);
 				exit(-1);
 			}
 		}
@@ -107,9 +110,6 @@ int main(int argc, char **argv){
 	}
 	printf("\n");*/
 
-	sigaction(SIGTERM, &terminate_children_action, NULL);
-	sigaction(SIGUSR1, &make_children_print_action, NULL);
-	
 	while(1){
 		killed_child = waitpid(-1, &code, WUNTRACED);
 
@@ -132,8 +132,8 @@ int main(int argc, char **argv){
 			}
 			else if(pid[child_no] == 0){
 				if(execve("child", parmList, NULL) < 0){
-					perror(DEFAULT"Counldn't send signal\n");
-					terminate_children_before_parent();
+					perror(DEFAULT"Counldn't create child\n");
+					kill(getppid(), SIGTERM);
 					exit(-1);
 				}
 			}

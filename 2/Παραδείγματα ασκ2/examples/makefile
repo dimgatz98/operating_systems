@@ -20,4 +20,4 @@ parent.o: parent.c
 
 # Run `make clean` to delete binaries and object files.
 clean:
-	rm parent.o parent child.o child
+	rm -rf $(TARGETS) *.o

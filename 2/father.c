@@ -27,7 +27,6 @@ void terminate_children_before_parent(){
 		printf(CYAN"[PARENT/PID=%d] Waiting for %d children to exit\n", getpid(), length - i);
 		if(kill(pid[i], SIGTERM) < 0){
 			perror(DEFAULT"Counldn't send signal\n");
-			exit(-1);
 		}
 		printf(YELLOW"[PARENT/PID=%d] Child with PID=%d terminated successfully with exit status code 0!\n", getpid(), pid[i]);
 	}
@@ -39,7 +38,6 @@ void terminate_children(int signum){
 		printf(CYAN"[PARENT/PID=%d] Waiting for %d children to exit\n", getpid(), length - i);
 		if(kill(pid[i], SIGTERM) < 0){
 			perror(DEFAULT"Counldn't send signal\n");
-			exit(-1);
 		}
 		printf(YELLOW"[PARENT/PID=%d] Child with PID=%d terminated successfully with exit status code 0!\n", getpid(), pid[i]);
 	}
@@ -70,7 +68,7 @@ int main(int argc, char **argv){
 		}
 	}
 
-	int code;
+	int child_no, code;
 	struct sigaction terminate_children_action, make_children_print_action, remake_child_action;
 	
 	terminate_children_action.sa_handler = terminate_children;
@@ -80,9 +78,9 @@ int main(int argc, char **argv){
 	make_children_print_action.sa_flags = SA_RESTART;
 	
 	length = strlen(argv[1]);
-	pid = (pid_t *) malloc(strlen(argv[1]));
+	pid = (pid_t *) malloc(sizeof(pid[0]) * length);
 	
-	for(int i = 0 ; i < strlen(argv[1]) ; i++){
+	for(int i = 0 ; i < length ; i++){
 		char flag[] = {argv[1][i], i};
 		char *const parmList[] = {"child", flag, NULL, NULL};
 		pid[i] = fork();
@@ -103,6 +101,12 @@ int main(int argc, char **argv){
 		}
 	}
 
+	/*printf("Those are the pid's:\n");
+	for(int i = 0 ; i < length ; i++){
+		printf("%d ", pid[i]);
+	}
+	printf("\n");*/
+
 	sigaction(SIGTERM, &terminate_children_action, NULL);
 	sigaction(SIGUSR1, &make_children_print_action, NULL);
 	
@@ -110,7 +114,6 @@ int main(int argc, char **argv){
 		killed_child = waitpid(-1, &code, WUNTRACED);
 
 		if(WIFEXITED(code)){
-			int child_no;
 			for(int i = 0 ; i < length ; i++){
 				if(pid[i] == killed_child){
 					child_no = i;

@@ -56,7 +56,12 @@ void make_children_print(int signum){
 }
 
 int main(int argc, char **argv){
-	if(argc != 2){
+	if(argc < 2){
+		perror(DEFAULT"Too few arguments in father process\n");
+		return -1;
+	}
+
+	if(argc > 2){
 		perror(DEFAULT"Too many arguments in father process\n");
 		return -1;
 	}
@@ -68,7 +73,7 @@ int main(int argc, char **argv){
 		}
 	}
 
-	int child_no, code;
+	int code;
 	struct sigaction terminate_children_action, make_children_print_action, remake_child_action;
 	
 	terminate_children_action.sa_handler = terminate_children;
@@ -114,6 +119,7 @@ int main(int argc, char **argv){
 		killed_child = waitpid(-1, &code, WUNTRACED);
 
 		if(WIFEXITED(code)){
+			int child_no;
 			for(int i = 0 ; i < length ; i++){
 				if(pid[i] == killed_child){
 					child_no = i;
@@ -126,7 +132,7 @@ int main(int argc, char **argv){
 			char *const parmList[] = {"child", flag, NULL, NULL};
 			pid[child_no] = fork();
 			if(pid[child_no] < 0){
-				perror(DEFAULT"child not created\n");
+				perror(DEFAULT"child not create\n");
 				terminate_children_before_parent();
 				exit(-1);
 			}

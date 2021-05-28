@@ -29,7 +29,7 @@ void print_and_alarm(int signum){
 	
 	else
     	printf(RED"[ID=%d/PID=%d/TIME=%lds] The gates are closed!\n", id, getpid(), time(NULL) - start);
-    alarm(5);
+    alarm(15);
 }
 
 void print_state(int signum){
@@ -52,6 +52,10 @@ void flip_state(int signum){
     }
 }
 
+void terminate(int signum){
+	exit(0);
+}
+
 int main(int argc, char **argv){
 	if(argc != 2){
 		perror(DEFAULT"Too many arguments in child process!");
@@ -68,6 +72,9 @@ int main(int argc, char **argv){
 	flip_state_action.sa_handler = flip_state;
 	flip_state_action.sa_flags = SA_RESTART;
 	
+	terminating_action.sa_handler = terminate;
+	terminating_action.sa_flags = SA_RESTART;
+	
 	id = argv[1][1];
 	gate_state = argv[1][0];
 
@@ -82,8 +89,9 @@ int main(int argc, char **argv){
     sigaction(SIGALRM, &print_and_alarm_action, NULL);
     sigaction(SIGUSR1, &print_state_action, NULL);
     sigaction(SIGUSR2, &flip_state_action, NULL);
+	sigaction(SIGTERM, &terminating_action, NULL);
 	
-	alarm(5);
+	alarm(15);
 
     while(1){
     	pause();

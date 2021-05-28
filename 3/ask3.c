@@ -118,7 +118,9 @@ int main(int argc, char **argv){
 	struct sigaction terminate_children_action;
 	terminate_children_action.sa_handler = terminate_children;
 	sigaction(SIGINT, &terminate_children_action, NULL);
+	
 	write(pd[0][1], "1", (strlen("1") + 1) );
+	
 	for(int i = 0 ; i < n ; i++){
 		close(pd[i][0]);
 		close(pd[i][1]);

@@ -7,7 +7,6 @@
 #include <getopt.h>
 #include <time.h>
 #include <stdlib.h>
-#include <ctype.h>
 #define MAX_LIMIT 50
 
 void remove_front_zeros(char *arr){
@@ -129,6 +128,9 @@ int main(int argc, char **argv){
             printf("Timestamp is: %s\n", datetime);
             memset(temp1, 0, strlen(temp1));
             memset(temp2, 0, strlen(temp2));   
+        }
+        else if(strcmp(buffer, "try again") == 0){
+            printf("%s\n", buffer);
         }
         else if(('0' <= msg[0] && msg[0] <= '9') && msg[1] == ' '){
             printf("Send verification code: %s\n", buffer);

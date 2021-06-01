@@ -114,7 +114,7 @@ int main(int argc, char **argv){
         if(strcmp(msg, "help") == 0){
             printf(GREEN"\nAssignment by Theofania Karabela (el17081) \
 and Dimitris Gkatziouras (03116145) \
-for the course Operating Systems of 6th semester.\n \
+for the course Operating Systems of the 6th semester. [01/6/2021]\n \
     usage: [options]\n \
         options:\n \
             exit: terminates program\n \
